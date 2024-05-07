@@ -29,26 +29,16 @@ class Node:
         return Node(self, placement, new_board, self.color)
 
     def generate_nodes(self) -> List['Node']:
-        placeable_coords = []
-
-        # find all coords where player can place a tile
-        for coord in self.board.blank_coords():
-            if self.board.adjacent_to_player(coord, self.color):
-                placeable_coords.append(coord)
-
         all_pieces = all_permutations()
         valid_placements = set()
 
-        # find all valid moves
-        for coord in placeable_coords:
-            for piece in all_pieces:
-                # try to play the piece with each 4 of its squares on the valid coord
-                for i in range(4):
-                    moved_piece = piece.make_centre(i).move_to_coord(coord).coords
-                    placement = PlaceAction(moved_piece[0], moved_piece[1], moved_piece[2], moved_piece[3])
+        for piece in all_pieces:
+            for coord in self.board.blank_coords():
+                moved_piece = piece.move_to_coord(coord).coords
+                placement = PlaceAction(moved_piece[0], moved_piece[1], moved_piece[2], moved_piece[3])
 
-                    if self.board.is_place_valid(placement, self.color):
-                        valid_placements.add(placement)
+                if self.board.is_place_valid(placement, self.color):
+                    valid_placements.add(placement)
 
         nodes = []
 
