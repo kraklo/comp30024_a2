@@ -1,7 +1,8 @@
 # COMP30024 Artificial Intelligence, Semester 1 2024
 # Project Part B: Game Playing Agent
-
+from agent.board_utils import Board
 from referee.game import PlayerColor, Action, PlaceAction, Coord
+from .search import search
 
 
 class Agent:
@@ -15,7 +16,8 @@ class Agent:
         This constructor method runs when the referee instantiates the agent.
         Any setup and/or precomputation should be done here.
         """
-        self._color = color
+        self.color = color
+        self.board = Board({})
         match color:
             case PlayerColor.RED:
                 print("Testing: I am playing as RED")
@@ -32,23 +34,7 @@ class Agent:
         # the agent is playing as BLUE or RED. Obviously this won't work beyond
         # the initial moves of the game, so you should use some game playing
         # technique(s) to determine the best action to take.
-        match self._color:
-            case PlayerColor.RED:
-                print("Testing: RED is playing a PLACE action")
-                return PlaceAction(
-                    Coord(3, 3), 
-                    Coord(3, 4), 
-                    Coord(4, 3), 
-                    Coord(4, 4)
-                )
-            case PlayerColor.BLUE:
-                print("Testing: BLUE is playing a PLACE action")
-                return PlaceAction(
-                    Coord(2, 3), 
-                    Coord(2, 4), 
-                    Coord(2, 5), 
-                    Coord(2, 6)
-                )
+        return search(self.board, self.color)
 
     def update(self, color: PlayerColor, action: Action, **referee: dict):
         """
@@ -58,6 +44,7 @@ class Agent:
 
         # There is only one action type, PlaceAction
         place_action: PlaceAction = action
+        self.board = self.board.play_move(place_action, color)
         c1, c2, c3, c4 = place_action.coords
 
         # Here we are just printing out the PlaceAction coordinates for
