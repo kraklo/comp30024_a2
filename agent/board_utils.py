@@ -114,3 +114,13 @@ class Board:
                     min_manhattan_distance = min(min_manhattan_distance, distance)
 
         return min_manhattan_distance
+
+    def number_of_player_blocks(self, color) -> int:
+        player_blocks = 0
+        for r in range(BOARD_N):
+            for c in range(BOARD_N):
+                this_coord = Coord(r, c)
+                if this_coord in self.board.keys() and self.board[this_coord] == color:
+                    player_blocks += 1
+
+        return player_blocks
