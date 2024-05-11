@@ -1,4 +1,4 @@
-import copy
+import random
 
 from referee.game.actions import PlaceAction
 from referee.game.player import PlayerColor
@@ -7,9 +7,10 @@ from referee.game.coord import Coord
 
 from .tetromino import all_permutations
 from .board_utils import Board
-from queue import PriorityQueue
 from .evaluation import evaluate
 from typing import Optional, List
+
+MAX_DEPTH = 0
 
 
 class Node:
@@ -18,10 +19,9 @@ class Node:
         self.placement = placement
         self.board = board
         self.color = color
-        self.evaluation = evaluate(board, color)
 
     def __lt__(self, other):
-        return self.evaluation < other.evaluation
+        return random.choice((True, False))
 
     def play_move(self, placement: PlaceAction) -> 'Node':
         new_board = self.board.play_move(placement, self.color)
@@ -51,7 +51,7 @@ class Node:
 def search(board: Board, color: PlayerColor) -> PlaceAction:
     # set up priority queue
     root = Node(None, None, board, color)
-    queue = PriorityQueue()
+    moves = []
 
     if len(board.board.keys()) == 0:
         return PlaceAction(
@@ -69,42 +69,48 @@ def search(board: Board, color: PlayerColor) -> PlaceAction:
         )
 
     child_nodes = root.generate_nodes()
+
     for node in child_nodes:
-        queue.put((minimax(node.board, 2, float('-inf'), float('inf'), color), node))
-        #queue.put((evaluate(node.board, color), node))
+        move = (minimax(node, MAX_DEPTH, color), node)
+        moves.append(move)
 
-    return queue.get()[1].placement
+    child_nodes.sort()
+
+    if color == PlayerColor.RED:
+        return child_nodes[-1].placement
+
+    return child_nodes[0].placement
 
 
-def minimax(board: Board, depth, alpha, beta, color) -> float:
-    root = Node(None, None, board, color)
-    child_nodes = root.generate_nodes()
-    # most desirable to make the other player not able to move
-    if len(child_nodes) == 0 and color == PlayerColor.RED:
+# red is trying to maximise eval while blue is trying to minimise eval
+def minimax(node: Node, depth: int, color: PlayerColor, alpha=float('-inf'), beta=float('inf')) -> float:
+    child_nodes = node.generate_nodes()
+
+    if len(child_nodes) == 0:
+        if color == PlayerColor.RED:
+            return float('-inf')
+
         return float('inf')
-    if len(child_nodes) == 0 and color == PlayerColor.BLUE:
-        return float('-inf')
 
     # max depth reached
     if depth == 0:
-        return evaluate(board, color)
+        return evaluate(node.board, color)
 
+    # maximise eval
     if color == PlayerColor.RED:
-        red_max_eval = float('-inf')
         for node in child_nodes:
-            red_eval = minimax(node.board, depth - 1, alpha, beta, PlayerColor.BLUE)
-            red_max_eval = max(red_max_eval, red_eval)
-            alpha = max(alpha, red_eval)
-            if beta <= alpha:
-                break
-            return red_max_eval
+            alpha = max(alpha, minimax(node, depth - 1, PlayerColor.BLUE, alpha, beta))
 
+            if alpha >= beta:
+                return beta
+
+        return alpha
+    # minimise eval
     else:
-        blue_max_eval = float('inf')
         for node in child_nodes:
-            blue_eval = minimax(node.board, depth - 1, alpha, beta, PlayerColor.RED)
-            blue_max_eval = min(blue_max_eval, blue_eval)
-            beta = min(beta, blue_eval)
+            beta = min(beta, minimax(node, depth - 1, PlayerColor.RED, alpha, beta))
+
             if beta <= alpha:
-                break
-            return blue_max_eval
+                return alpha
+
+        return beta
