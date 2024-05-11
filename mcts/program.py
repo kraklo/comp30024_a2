@@ -1,8 +1,9 @@
 # COMP30024 Artificial Intelligence, Semester 1 2024
 # Project Part B: Game Playing Agent
-from agent.board_utils import Board
+from .board_utils import Board
 from referee.game import PlayerColor, Action, PlaceAction, Coord
 from .search import search
+from .tree import Tree
 
 
 class Agent:
@@ -18,6 +19,7 @@ class Agent:
         """
         self.color = color
         self.board = Board({})
+        self.tree = Tree()
 
     def action(self, **referee: dict) -> Action:
         """
@@ -29,7 +31,7 @@ class Agent:
         # the agent is playing as BLUE or RED. Obviously this won't work beyond
         # the initial moves of the game, so you should use some game playing
         # technique(s) to determine the best action to take.
-        return search(self.board, self.color)
+        return search(self.board, self.color, self.tree)
 
     def update(self, color: PlayerColor, action: Action, **referee: dict):
         """

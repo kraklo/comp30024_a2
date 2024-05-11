@@ -9,7 +9,7 @@ from .node import Node
 from .board_utils import Board
 from .evaluation import evaluate
 
-MAX_DEPTH = 0
+MAX_DEPTH = 2
 
 
 def search(board: Board, color: PlayerColor) -> PlaceAction:
@@ -33,7 +33,7 @@ def search(board: Board, color: PlayerColor) -> PlaceAction:
         )
 
     child_nodes = root.generate_nodes()
-    if len(child_nodes) > 50:
+    if len(child_nodes) > 3:
         return random.choice(child_nodes).placement
 
     for node in child_nodes:

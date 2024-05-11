@@ -10,6 +10,8 @@ from referee.game.constants import BOARD_N
 class Board:
     def __init__(self, board: dict):
         self.board = board
+        self.board_string = self.board_to_string()
+        print(self.board_string)
 
     # return all blank coords
     def blank_coords(self):
@@ -92,6 +94,7 @@ class Board:
                 new_board[coord] = self.board[coord]
 
         self.board = new_board
+        self.board_string = self.board_to_string()
 
     def play_move(self, placement: PlaceAction, color: PlayerColor) -> 'Board':
         new_board = copy.deepcopy(self)
@@ -101,20 +104,6 @@ class Board:
         new_board.clear_full_lines()
 
         return new_board
-
-    # manhattan distance between given coord and the closest red player square
-    def manhattan_distance(self, coord):
-        min_manhattan_distance = float('inf')
-
-        for r in range(BOARD_N):
-            for c in range(BOARD_N):
-                this_coord = Coord(r, c)
-
-                if this_coord in self.board.keys() and self.board[this_coord] == PlayerColor.RED:
-                    distance = abs(c - coord.c) + abs(r - coord.r)
-                    min_manhattan_distance = min(min_manhattan_distance, distance)
-
-        return min_manhattan_distance
 
     def number_of_player_blocks(self, color) -> int:
         player_blocks = 0
@@ -158,3 +147,20 @@ class Board:
                     playable_squares.append(square)
 
         return playable_squares
+
+    def board_to_string(self) -> str:
+        board = ''
+
+        for i in range(BOARD_N):
+            for j in range(BOARD_N):
+                coord = Coord(i, j)
+                if coord not in self.board.keys():
+                    board += '_'
+                    continue
+
+                board += 'r' if self.board[coord] == PlayerColor.RED else 'b'
+
+        return board
+
+    def is_transposition(self, other: 'Board') -> bool:
+        return other.board_string in (self.board_string + self.board_string)
