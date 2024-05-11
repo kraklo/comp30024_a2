@@ -5,52 +5,16 @@ from referee.game.player import PlayerColor
 from referee.game.constants import BOARD_N
 from referee.game.coord import Coord
 
-from .tetromino import all_permutations
+from .node import Node
 from .board_utils import Board
 from .evaluation import evaluate
-from typing import Optional, List
 
 MAX_DEPTH = 0
 
 
-class Node:
-    def __init__(self, parent: Optional['Node'], placement: Optional[PlaceAction], board: Board, color: PlayerColor):
-        self.parent = parent
-        self.placement = placement
-        self.board = board
-        self.color = color
-
-    def __lt__(self, other):
-        return random.choice((True, False))
-
-    def play_move(self, placement: PlaceAction) -> 'Node':
-        new_board = self.board.play_move(placement, self.color)
-
-        return Node(self, placement, new_board, self.color)
-
-    def generate_nodes(self) -> List['Node']:
-        all_pieces = all_permutations()
-        valid_placements = set()
-
-        for piece in all_pieces:
-            for coord in self.board.blank_coords():
-                moved_piece = piece.move_to_coord(coord).coords
-                placement = PlaceAction(moved_piece[0], moved_piece[1], moved_piece[2], moved_piece[3])
-
-                if self.board.is_place_valid(placement, self.color):
-                    valid_placements.add(placement)
-
-        nodes = []
-
-        for placement in valid_placements:
-            nodes.append(self.play_move(placement))
-
-        return nodes
-
-
 def search(board: Board, color: PlayerColor) -> PlaceAction:
     # set up priority queue
-    root = Node(None, None, board, color)
+    root = Node(None, board, color)
     moves = []
 
     if len(board.board.keys()) == 0:
@@ -69,17 +33,20 @@ def search(board: Board, color: PlayerColor) -> PlaceAction:
         )
 
     child_nodes = root.generate_nodes()
+    if len(child_nodes) > 50:
+        return random.choice(child_nodes).placement
 
     for node in child_nodes:
         move = (minimax(node, MAX_DEPTH, color), node)
         moves.append(move)
 
-    child_nodes.sort()
+    moves.sort()
+    print(moves[0])
 
     if color == PlayerColor.RED:
-        return child_nodes[-1].placement
+        return moves[-1][1].placement
 
-    return child_nodes[0].placement
+    return moves[0][1].placement
 
 
 # red is trying to maximise eval while blue is trying to minimise eval

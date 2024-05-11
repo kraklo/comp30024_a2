@@ -1,9 +1,10 @@
-from .board_utils import Board
 from referee.game import PlayerColor
+from .board_utils import Board
+from .node import Node
 
 
-def evaluate(board: Board, color) -> int:
-    val = 0
-    val = board.number_of_player_blocks(color)
+def evaluate(board: Board, color: PlayerColor) -> float:
+    node = Node(None, board, color)
+    num_valid_moves = len(node.generate_nodes())
 
-    return val
+    return num_valid_moves

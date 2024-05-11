@@ -65,7 +65,7 @@ class TetrominoShape:
 class Tetromino(Enum):
     LINE = (TetrominoShape([Coord(0, 0), Coord(0, 1), Coord(0, 2), Coord(0, 3)]), 2)
     J = (TetrominoShape([Coord(0, 0), Coord(1, 0), Coord(1, 1), Coord(1, 2)]), 4)
-    L = (TetrominoShape([Coord(1, 0), Coord(1, 1), Coord(1, 2), Coord(0, 2)]), 4)
+    L = (TetrominoShape([Coord(1, 0), Coord(0, 0), Coord(0, 1), Coord(0, 2)]), 4)
     BOX = (TetrominoShape([Coord(0, 0), Coord(0, 1), Coord(1, 0), Coord(1, 1)]), 0)
     S = (TetrominoShape([Coord(1, 0), Coord(1, 1), Coord(0, 1), Coord(0, 2)]), 2)
     Z = (TetrominoShape([Coord(0, 0), Coord(0, 1), Coord(1, 1), Coord(1, 2)]), 2)
@@ -81,15 +81,15 @@ def all_permutations() -> List[TetrominoShape]:
     permutations = []
 
     for shape in all_shapes():
-        permutations.append(shape.value[0])
+        permutations.append(shape.value[0].make_centre(0))
 
         # append a single 90 degree rotation if shape is not totally symmetrical
         if shape.value[1] >= 2:
-            permutations.append(shape.value[0].rotate(1))
+            permutations.append(shape.value[0].rotate(1).make_centre(0))
 
         # append other rotations if shape has no axis of symmetry
         if shape.value[1] == 4:
-            permutations.append(shape.value[0].rotate(2))
-            permutations.append(shape.value[0].rotate(3))
+            permutations.append(shape.value[0].rotate(2).make_centre(0))
+            permutations.append(shape.value[0].rotate(3).make_centre(0))
 
     return permutations
