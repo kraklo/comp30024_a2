@@ -70,6 +70,41 @@ def search(board: Board, color: PlayerColor) -> PlaceAction:
 
     child_nodes = root.generate_nodes()
     for node in child_nodes:
-        queue.put((evaluate(node.board, color), node))
+        queue.put((minimax(node.board, 2, float('-inf'), float('inf'), color), node))
+        #queue.put((evaluate(node.board, color), node))
 
     return queue.get()[1].placement
+
+
+def minimax(board: Board, depth, alpha, beta, color) -> float:
+    root = Node(None, None, board, color)
+    child_nodes = root.generate_nodes()
+    # most desirable to make the other player not able to move
+    if len(child_nodes) == 0 and color == PlayerColor.RED:
+        return float('inf')
+    if len(child_nodes) == 0 and color == PlayerColor.BLUE:
+        return float('-inf')
+
+    # max depth reached
+    if depth == 0:
+        return evaluate(board, color)
+
+    if color == PlayerColor.RED:
+        red_max_eval = float('-inf')
+        for node in child_nodes:
+            red_eval = minimax(node.board, depth - 1, alpha, beta, PlayerColor.BLUE)
+            red_max_eval = max(red_max_eval, red_eval)
+            alpha = max(alpha, red_eval)
+            if beta <= alpha:
+                break
+            return red_max_eval
+
+    else:
+        blue_max_eval = float('inf')
+        for node in child_nodes:
+            blue_eval = minimax(node.board, depth - 1, alpha, beta, PlayerColor.RED)
+            blue_max_eval = min(blue_max_eval, blue_eval)
+            beta = min(beta, blue_eval)
+            if beta <= alpha:
+                break
+            return blue_max_eval
