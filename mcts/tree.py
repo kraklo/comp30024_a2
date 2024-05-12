@@ -1,10 +1,12 @@
 import math
 
-from typing import Optional
+from typing import Optional, List
+from time import time
 
 from .board_utils import Board
 from .node import Node
 from referee.game import PlayerColor
+from .tetromino import TetrominoShape
 
 BALANCING_CONSTANT = 1
 
@@ -37,13 +39,16 @@ class TreeNode:
         self.board_string = board_string
         self.children = {}
         self.playouts = 0
+        self.amaf_visits = 0
+        self.amaf_wins = 0
         self.wins = 0
+        self.ucb_score = float('inf')
 
     def ucb(self) -> float:
         if self.playouts == 0:
             return float('inf')
 
-        if self.parent.wins == 0:
+        if not self.parent or self.parent.wins == 0:
             return self.wins / self.playouts
 
         return ((self.wins / self.playouts)
@@ -55,16 +60,18 @@ class TreeNode:
         if winning_color == self.node.color:
             self.wins += 1
 
+        self.ucb_score = self.ucb()
+
         if self.parent:
             self.parent.back_propagate(winning_color)
 
-    def playout(self) -> None:
-        winning_color = self.node.playout()
+    def playout(self, pieces: List[TetrominoShape], time_struct) -> None:
+        winning_color = self.node.playout(pieces, time_struct)
         self.back_propagate(winning_color)
 
-    def select_max_child(self) -> 'TreeNode':
+    def select_max_child(self, pieces: List[TetrominoShape]) -> 'TreeNode':
         if len(self.children.keys()) == 0:
-            child_nodes = self.node.generate_nodes()
+            child_nodes = self.node.generate_nodes(pieces)
 
             for node in child_nodes:
                 child_node = self.tree.add_tree_node(node, self)
@@ -72,9 +79,8 @@ class TreeNode:
 
         max_ucb = float('-inf')
         max_node = None
-
         for key in self.children.keys():
-            ucb = self.children[key].ucb()
+            ucb = self.children[key].ucb_score
 
             if ucb > max_ucb:
                 max_ucb = ucb

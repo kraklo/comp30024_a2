@@ -4,6 +4,7 @@ from .board_utils import Board
 from referee.game import PlayerColor, Action, PlaceAction, Coord
 from .search import search
 from .tree import Tree
+from .tetromino import all_permutations
 
 
 class Agent:
@@ -20,6 +21,7 @@ class Agent:
         self.color = color
         self.board = Board({})
         self.tree = Tree()
+        self.pieces = all_permutations()
 
     def action(self, **referee: dict) -> Action:
         """
@@ -31,7 +33,7 @@ class Agent:
         # the agent is playing as BLUE or RED. Obviously this won't work beyond
         # the initial moves of the game, so you should use some game playing
         # technique(s) to determine the best action to take.
-        return search(self.board, self.color, self.tree, referee['time_remaining'])
+        return search(self.board, self.color, self.tree, self.pieces, referee['time_remaining'])
 
     def update(self, color: PlayerColor, action: Action, **referee: dict):
         """
