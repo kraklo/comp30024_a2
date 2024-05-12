@@ -31,7 +31,7 @@ class Agent:
         # the agent is playing as BLUE or RED. Obviously this won't work beyond
         # the initial moves of the game, so you should use some game playing
         # technique(s) to determine the best action to take.
-        return search(self.board, self.color, self.tree)
+        return search(self.board, self.color, self.tree, referee['time_remaining'])
 
     def update(self, color: PlayerColor, action: Action, **referee: dict):
         """

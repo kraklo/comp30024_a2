@@ -6,38 +6,27 @@ from .board_utils import Board
 from .node import Node
 from referee.game import PlayerColor
 
-BALANCING_CONSTANT = 2
+BALANCING_CONSTANT = 1
 
 
 class Tree:
     def __init__(self):
         self.nodes = {}
 
-    def contained_transposed_board(self, board: Board) -> str:
-        for key in self.nodes.keys():
-            if board.is_transposition(self.nodes[key].node.board):
-                return self.nodes[key].node.board.board_string
-
-        return ''
-
     def add_tree_node(self, node: Node, parent: Optional['TreeNode']) -> 'TreeNode':
-        transposed_str = self.contained_transposed_board(node.board)
+        transposition = self.nodes.get(node.board.board_string, None)
 
-        if transposed_str:
-            return self.nodes[transposed_str]
+        if transposition:
+            self.nodes[node.board.board_string].node = node
+            return self.nodes[node.board.board_string]
 
-        new_node = TreeNode(node, parent, self, node.board.board_to_string())
+        new_node = TreeNode(node, parent, self, node.board.board_string)
         self.nodes[node.board.board_string] = new_node
 
         return new_node
 
     def get_node_from_board(self, board: Board) -> Optional['TreeNode']:
-        transposed_str = self.contained_transposed_board(board)
-
-        if transposed_str:
-            return self.nodes[transposed_str]
-
-        return None
+        return self.nodes.get(board.board_string, None)
 
 
 class TreeNode:
@@ -51,8 +40,11 @@ class TreeNode:
         self.wins = 0
 
     def ucb(self) -> float:
-        if self.playouts == 0 or self.parent.wins == 0:
+        if self.playouts == 0:
             return float('inf')
+
+        if self.parent.wins == 0:
+            return self.wins / self.playouts
 
         return ((self.wins / self.playouts)
                 + BALANCING_CONSTANT * math.sqrt(math.log(self.parent.wins) / self.playouts))
