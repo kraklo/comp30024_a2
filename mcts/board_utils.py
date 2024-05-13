@@ -1,4 +1,5 @@
 import copy
+import gc
 from typing import List
 
 from referee.game import PlaceAction
@@ -11,7 +12,6 @@ class Board:
     def __init__(self, board: dict):
         self.board = board
         self.board_string = self.board_to_string()
-        print(self.board_string)
 
     # return all blank coords
     def blank_coords(self):
@@ -31,7 +31,12 @@ class Board:
         adjacent_coords = (coord.up(), coord.down(), coord.left(), coord.right())
 
         for coord in adjacent_coords:
+            flag = False
             if self.board.get(coord, None) is not None and self.board[coord] == color:
+                flag = True
+
+            del coord
+            if flag:
                 return True
 
         return False
@@ -93,8 +98,13 @@ class Board:
             if coord.r not in full_rows and coord.c not in full_cols:
                 new_board[coord] = self.board[coord]
 
+        del self.board
+        del self.board_string
+        del full_rows
+        del full_cols
         self.board = new_board
         self.board_string = self.board_to_string()
+        gc.collect()
 
     def play_move(self, placement: PlaceAction, color: PlayerColor) -> 'Board':
         new_board = copy.deepcopy(self)
@@ -113,40 +123,10 @@ class Board:
                 if this_coord in self.board.keys() and self.board[this_coord] == color:
                     player_blocks += 1
 
+                del this_coord
+
+        gc.collect()
         return player_blocks
-
-    # test method for more efficiently generating moves (current tests show it's slower)
-    def playable_squares(self) -> List[Coord]:
-        visited_squares_matrix = [[False] * BOARD_N for i in range(BOARD_N)]
-        playable_squares = []
-        blank_coords = self.blank_coords()
-
-        for coord in blank_coords:
-            if visited_squares_matrix[coord.r][coord.c]:
-                continue
-
-            path = [coord]
-            visited_squares = [coord]
-            visited_squares_matrix[coord.r][coord.c] = True
-            path_length = 0
-
-            while len(path) != 0:
-                path_coord = path.pop()
-                path_length += 1
-
-                adjacent_coords = (path_coord.up(), path_coord.down(), path_coord.left(), path_coord.right())
-
-                for adj_coord in adjacent_coords:
-                    if not visited_squares_matrix[adj_coord.r][adj_coord.c] and adj_coord in blank_coords:
-                        visited_squares.append(adj_coord)
-                        visited_squares_matrix[adj_coord.r][adj_coord.c] = True
-                        path.append(adj_coord)
-
-            if path_length >= 4:
-                for square in visited_squares:
-                    playable_squares.append(square)
-
-        return playable_squares
 
     def board_to_string(self) -> str:
         board = ''
@@ -159,8 +139,7 @@ class Board:
                     continue
 
                 board += 'r' if self.board[coord] == PlayerColor.RED else 'b'
+                del coord
 
+        gc.collect()
         return board
-
-    def is_transposition(self, other: 'Board') -> bool:
-        return other.board_string in (self.board_string + self.board_string)

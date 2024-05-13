@@ -38,8 +38,6 @@ class TreeNode:
         self.board_string = board_string
         self.children = {}
         self.playouts = 0
-        self.amaf_visits = 0
-        self.amaf_wins = 0
         self.wins = 0
         self.ucb_score = float('inf')
 
