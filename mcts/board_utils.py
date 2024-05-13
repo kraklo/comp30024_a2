@@ -31,7 +31,7 @@ class Board:
         adjacent_coords = (coord.up(), coord.down(), coord.left(), coord.right())
 
         for coord in adjacent_coords:
-            if coord in self.board.keys() and self.board[coord] == color:
+            if self.board.get(coord, None) is not None and self.board[coord] == color:
                 return True
 
         return False
@@ -49,10 +49,10 @@ class Board:
 
         for coord in place.coords:
             # not a valid placement if there is already a square here
-            if coord in self.board.keys():
+            if self.board.get(coord, None) is not None:
                 return False
 
-            if self.adjacent_to_player(coord, color) or self.is_first_turn(color):
+            if not is_adjacent and self.adjacent_to_player(coord, color):
                 is_adjacent = True
 
         return is_adjacent

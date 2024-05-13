@@ -1,7 +1,6 @@
 import math
 
 from typing import Optional, List
-from time import time
 
 from .board_utils import Board
 from .node import Node
@@ -65,8 +64,8 @@ class TreeNode:
         if self.parent:
             self.parent.back_propagate(winning_color)
 
-    def playout(self, pieces: List[TetrominoShape], time_struct) -> None:
-        winning_color = self.node.playout(pieces, time_struct)
+    def playout(self, pieces: List[TetrominoShape]) -> None:
+        winning_color = self.node.playout(pieces)
         self.back_propagate(winning_color)
 
     def select_max_child(self, pieces: List[TetrominoShape]) -> 'TreeNode':
@@ -79,28 +78,29 @@ class TreeNode:
 
         max_ucb = float('-inf')
         max_node = None
+
         for key in self.children.keys():
-            ucb = self.children[key].ucb_score
+            this_node = self.children[key]
+            ucb = this_node.ucb_score
+
+            if ucb == float('inf'):
+                return this_node
 
             if ucb > max_ucb:
                 max_ucb = ucb
-                max_node = self.children[key]
+                max_node = this_node
 
         return max_node
 
     def select_best_move(self) -> 'TreeNode':
-        max_proportion = float('-inf')
+        max_playouts = float('-inf')
         max_node = None
 
         for key in self.children.keys():
             node = self.children[key]
-            if node.playouts > 0:
-                proportion = node.wins / node.playouts
-            else:
-                proportion = 0
 
-            if proportion > max_proportion:
-                max_proportion = proportion
+            if node.playouts > max_playouts and self.node.board.is_place_valid(node.node.placement, self.node.color):
+                max_playouts = node.playouts
                 max_node = node
 
         return max_node
