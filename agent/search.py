@@ -33,7 +33,7 @@ def search(board: Board, color: PlayerColor) -> PlaceAction:
         )
 
     child_nodes = root.generate_nodes()
-    if len(child_nodes) > 3:
+    if len(child_nodes) > 0:
         return random.choice(child_nodes).placement
 
     for node in child_nodes:

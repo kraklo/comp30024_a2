@@ -17,7 +17,7 @@ MCTS_ITERATIONS = 1000
 
 def search(board: Board, color: PlayerColor, tree: Tree, pieces: List[TetrominoShape], time_remaining) -> PlaceAction:
     if not time_remaining:
-        time_remaining = 180
+        time_remaining = 60
 
     turn_start_time = time()
     root = Node(None, board, color)
@@ -31,12 +31,12 @@ def search(board: Board, color: PlayerColor, tree: Tree, pieces: List[TetrominoS
         random_coord = random.choice(board.blank_coords())
         moved_piece = random_piece.move_to_coord(random_coord).coords
         placement = PlaceAction(moved_piece[0], moved_piece[1], moved_piece[2], moved_piece[3])
-        
+
         return placement
 
     # simulate playouts
     for i in range(MCTS_ITERATIONS):
-        if time() - turn_start_time >= min(9.0, time_remaining / 6):
+        if time() - turn_start_time >= min(3.0, time_remaining / 6):
             break
 
         # select a node
@@ -59,7 +59,7 @@ def search(board: Board, color: PlayerColor, tree: Tree, pieces: List[TetrominoS
     best_move = root_tree_node.select_best_move()
 
     # for some reason if there is only one valid move the ai will choose an invalid move
-    if not board.is_place_valid(best_move.node.placement, color):
+    if not best_move or not board.is_place_valid(best_move.node.placement, color):
         print('how did we get here?')
         best_move = root_tree_node.node.generate_nodes(pieces)[0]
         return best_move.placement
