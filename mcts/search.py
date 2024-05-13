@@ -4,8 +4,6 @@ import random
 
 from referee.game.actions import PlaceAction
 from referee.game.player import PlayerColor
-from referee.game.constants import BOARD_N
-from referee.game.coord import Coord
 
 from .node import Node
 from .board_utils import Board
@@ -17,7 +15,7 @@ MCTS_ITERATIONS = 1000
 
 def search(board: Board, color: PlayerColor, tree: Tree, pieces: List[TetrominoShape], time_remaining) -> PlaceAction:
     if not time_remaining:
-        time_remaining = 60
+        time_remaining = 180
 
     turn_start_time = time()
     root = Node(None, board, color)
@@ -36,7 +34,7 @@ def search(board: Board, color: PlayerColor, tree: Tree, pieces: List[TetrominoS
 
     # simulate playouts
     for i in range(MCTS_ITERATIONS):
-        if time() - turn_start_time >= min(3.0, time_remaining / 6):
+        if time() - turn_start_time >= min(9.0, time_remaining / 6):
             break
 
         # select a node
